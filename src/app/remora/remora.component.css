@@ -1,0 +1,20 @@
+
+#cy {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 100px;
+  left: 0px;
+}
+
+#remoraQuery {
+  width: 90%;
+  border-color: black;
+  border-width: thin;
+}
+
+#remoraMark {
+  width: 90%;
+  border-color: black;
+  border-width: thin;
+}

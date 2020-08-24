@@ -1,0 +1,28 @@
+<input id="remoraQuery" type="text" class="w3-input"
+       #searchbox
+       class="gocypher-dark-light"
+       [(ngModel)]="query" name="query"
+       #name="ngModel"
+       placeholder="Type filter query query"
+       [matAutocomplete]="auto"
+       #trigger="matAutocompleteTrigger"
+       (keydown.enter)="$event.target.blur();trigger.closePanel();onTriggerSearch();"
+       (ngModelChange)="doFilter(query)"
+>
+<mat-autocomplete #auto="matAutocomplete">
+  <mat-option *ngFor="let option of filteredOptions" [value]="option">
+<span (click)="onRemoveQueryClick($event,option)">
+<mat-icon svgIcon="delete" style="width:16px;height:16px;"></mat-icon>
+</span>
+    <span style="font-size:0.9rem">{{option}}</span>
+  </mat-option>
+</mat-autocomplete>
+<button (click)="submit()">Click</button>
+
+<br>
+<input id="remoraMark" type="text" [(ngModel)]="mark" name="mark"
+       #name="ngModel">
+<button (click)="markIt()">Mark</button>
+<button (click)="clearIt()">Clear</button>
+
+<div id="cy"></div>
