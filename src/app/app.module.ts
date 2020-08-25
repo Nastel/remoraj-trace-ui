@@ -10,11 +10,13 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatIconModule} from '@angular/material/icon';
+import { TraceNodeTippieComponent } from './trace-node-tippie/trace-node-tippie.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    RemoraComponent
+    RemoraComponent,
+    TraceNodeTippieComponent
   ],
   imports: [
     BrowserModule,

@@ -1,10 +1,21 @@
-import {Component, OnInit} from '@angular/core';
+import {
+  Component,
+  ComponentFactoryResolver,
+  Injector,
+  AfterViewInit,
+  ReflectiveInjector,
+  ViewChild,
+  ViewContainerRef,
+  ViewChildren
+} from '@angular/core';
 import * as cytoscape from 'cytoscape';
 import * as popper from 'cytoscape-popper';
 import * as tippy from 'tippy.js';
 
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
+import {dataPoint, traceElement} from '../model/dataPoint';
+import {TraceNodeTippieComponent} from '../trace-node-tippie/trace-node-tippie.component';
 
 
 cytoscape.use(popper);
@@ -14,8 +25,8 @@ cytoscape.use(popper);
   templateUrl: './remora.component.html',
   styleUrls: ['./remora.component.css']
 })
-export class RemoraComponent implements OnInit {
-
+export class RemoraComponent implements AfterViewInit {
+  @ViewChild('tippie', {read: ViewContainerRef}) activeComponent: ViewContainerRef;
   private cy;
   readonly baseNodeColor = 'green';
   readonly markNodeColor = 'red';
@@ -26,7 +37,7 @@ export class RemoraComponent implements OnInit {
 
   private readonly _storageKey = 'remoraQueries';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private resolver: ComponentFactoryResolver, private injector: Injector) {
     let remoraQueries = window.localStorage.getItem(this._storageKey);
     if (remoraQueries != undefined) {
       this.defaultOptions = JSON.parse(remoraQueries);
@@ -36,7 +47,7 @@ export class RemoraComponent implements OnInit {
 
   private readonly _base_jkql = 'get latest 50 events fields message, EventName as name, EventID as id, map(\'class\') as class';
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
 
     this.loadData(this._base_jkql);
     this.loadCytoscape();
@@ -168,52 +179,25 @@ export class RemoraComponent implements OnInit {
           let cy = this.cy;
           for (let index = 0; index < data['rows'].length; index++) {
             let row = data['rows'][index];
-            let clazz = data['rows'][index]["Properties('class')"] == null ? "" : data['rows'][index]["Properties('class')"].class;
-            let name = data['rows'][index]["EventName"];
-            let eventID = data['rows'][index]["EventID"];
-            console.log('Row:', row);
-            let strings = row['Message'].split('\n');
+            let traceElementLines = row['Message'].split('\n');
             let cy = this.cy;
-            for (let innerIndex = 0; innerIndex < strings.length; innerIndex++) {
-              let line = strings[innerIndex];
+            for (let innerIndex = 0; innerIndex < traceElementLines.length; innerIndex++) {
+              let line = traceElementLines[innerIndex];
               if (line.startsWith('Stack length:') || line.trim() == '') {
                 continue;
               }
-              console.log('Line:', line.trim());
-
-              if (cy.getElementById(line).length === 0) {
-
-                let pck = line.substring(0, line.lastIndexOf('.')).trim();
-                let method = line.substring(line.lastIndexOf('.') + 1).trim();
-                if (method.substring(0, method.length - 2)== name && clazz == pck) {
-                  cy.add({
-                    data: {
-                      id: line,
-                      package: pck,
-                      method: method,
-                      color: 'yellow',
-                      eventID: eventID
-                    }
-                  });
-                } else {
-
-                  cy.add({
-                    data: {
-                      id: line,
-                      package: pck,
-                      method: method,
-                      color: this.baseNodeColor
-                    }
-                  });
-                }
+              if (!cy.hasElementWithId(line.trim())) {
+                let dataPoint1 = new dataPoint(line, row);
+                let traceElement1 = new traceElement(dataPoint1);
+                cy.add(traceElement1);
               }
 
               if (innerIndex >= 2) {
                 cy.add({
                   data: {
                     id: index + '_' + innerIndex,
-                    source: strings[innerIndex - 1],
-                    target: line,
+                    source: traceElementLines[innerIndex - 1].trim(),
+                    target: line.trim(),
                   }
 
                 });
@@ -223,8 +207,8 @@ export class RemoraComponent implements OnInit {
 
           }
 
-
           var makeTippy = function(node, html) {
+
             return tippy(node.popperRef(), {
               html: html,
               trigger: 'manual',
@@ -240,7 +224,7 @@ export class RemoraComponent implements OnInit {
             var tippy = node.data('tippy');
 
             if (tippy != null) {
-              tippy.hide();
+              tippy.instance.hide();
             }
           };
 
@@ -262,24 +246,12 @@ export class RemoraComponent implements OnInit {
             hideAllTippies();
           });
 
-          cy.nodes().forEach(function(n) {
-            var g = n.data('id');
-
-            var $links = [
-              {
-                name: g,
-                url: 'https://jkool.jkoolcloud.com/jKool/' + g
-              }
-            ].map(function(link) {
-              return h('a', {target: '_blank', href: link.url, 'class': 'tip-link'}, [t(link.name)]);
-            });
-
-            var tippy = makeTippy(n, h('div', {}, $links));
-
+          cy.nodes().forEach((n) => {
+            let tippy = this.makeNewTippy(n);
             n.data('tippy', tippy);
 
             n.on('click', function(e) {
-              tippy.show();
+              tippy.instance.show();
               cy.nodes().not(n).forEach((node) => hideTippy(node));
             });
           });
@@ -348,6 +320,16 @@ export class RemoraComponent implements OnInit {
       , error => {
         console.log('Error on jkool call', error);
       });
+  }
+
+  private makeNewTippy(n: any) {
+    let factory = this.resolver.resolveComponentFactory(TraceNodeTippieComponent);
+    let tippy = this.activeComponent.createComponent<TraceNodeTippieComponent>(factory);
+    tippy.instance.nodeRef=n.popperRef();
+    tippy.instance.data=n.data();
+    console.log(n.data);
+    tippy.instance.build();
+    return tippy;
   }
 
   submit() {
