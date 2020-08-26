@@ -5,7 +5,7 @@ export class dataPoint implements NodeDataDefinition{
   clazz: string;
   method: string;
   color: string;
-  eventID: string;
+  eventID: string[] = [];
 
   constructor(line: any, row: any) {
     this.id = line.trim();
@@ -16,6 +16,7 @@ export class dataPoint implements NodeDataDefinition{
 
     if (this.method.substring(0, this.method.length - 2) == row["EventName"] && rowClazz == this.clazz) {
       this.color = 'yellow';
+      this.eventID.push(row["EventID"]);
     } else {
       this.color = 'green';
     }

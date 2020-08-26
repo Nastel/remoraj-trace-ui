@@ -1,3 +1,19 @@
+<div><dx-range-selector
+  id="range-selector"
+  [value]="[selectedStartValue, selectedEndValue]"
+  title="Selected Period">
+  <dxo-scale
+    [startValue]="startValue"
+    [endValue]="endValue"
+    minorTickInterval="second"
+    tickInterval="hour"
+    minRange="second"
+    maxRange="hour">
+    <dxo-minor-tick [visible]="false"></dxo-minor-tick>
+  </dxo-scale>
+  <dxo-slider-marker format="m:s"></dxo-slider-marker>
+</dx-range-selector>
+
 <input id="remoraQuery" type="text" class="w3-input"
        #searchbox
        class="gocypher-dark-light"
@@ -25,4 +41,5 @@
 <button (click)="markIt()">Mark</button>
 <button (click)="clearIt()">Clear</button>
 <ng-template #tippie></ng-template>
+</div>
 <div id="cy"></div>

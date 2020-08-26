@@ -16,6 +16,7 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
 import {dataPoint, traceElement} from '../model/dataPoint';
 import {TraceNodeTippieComponent} from '../trace-node-tippie/trace-node-tippie.component';
+import {JkoolService} from '../jkool.service';
 
 
 cytoscape.use(popper);
@@ -37,7 +38,7 @@ export class RemoraComponent implements AfterViewInit {
 
   private readonly _storageKey = 'remoraQueries';
 
-  constructor(private http: HttpClient, private resolver: ComponentFactoryResolver, private injector: Injector) {
+  constructor(private resolver: ComponentFactoryResolver, private jkoolService: JkoolService) {
     let remoraQueries = window.localStorage.getItem(this._storageKey);
     if (remoraQueries != undefined) {
       this.defaultOptions = JSON.parse(remoraQueries);
@@ -46,9 +47,26 @@ export class RemoraComponent implements AfterViewInit {
   }
 
   private readonly _base_jkql = 'get latest 50 events fields message, EventName as name, EventID as id, map(\'class\') as class';
+  endValue: Date = new Date();
+  startValue: Date = new Date(this.endValue.getTime() - 6 * 60000);
+
+  selectedStartValue: Date = new Date(2011, 1, 5);
+  selectedEndValue: Date = new Date(2011, 2, 5);
 
   ngAfterViewInit(): void {
+    this.jkoolService.executeHttpRequest('Get Event  fields open(starttime), close(starttime) for latest day').then(
+      data => {
 
+        let date = new Date(data.rows[0]['Open(StartTime,StartTime)'] / 1000);
+        console.log(date);
+        this.startValue = date;
+
+        let date1 = new Date(data.rows[0]['Close(StartTime,StartTime)'] / 1000);
+        console.log(date1);
+        this.endValue = date1;
+
+
+      });
     this.loadData(this._base_jkql);
     this.loadCytoscape();
 
@@ -65,9 +83,8 @@ export class RemoraComponent implements AfterViewInit {
   }
 
   clearIt() {
-    let stantdard = this.baseNodeColor;
     this.cy.elements().forEach(function(ele) {
-      ele.style('background-color', stantdard);
+      ele.style('background-color', ele.data()['color']);
     });
   }
 
@@ -106,75 +123,19 @@ export class RemoraComponent implements AfterViewInit {
 
   }
 
-  private buildSearchUrl(searchQuery: string): string {
-    const searchConf = {
-
-      url: 'https://www.gocypher.com/gocypherservices/services/v1/proxy/jkql',
-      param_token: '&jk_token=',
-      param_query: '?jk_query=',
-      param_max_rows: '&jk_maxrows=',
-      max_rows: 500,
-      param_time_zone: '&jk_tz=GMT',
-      param_time_range: '&jk_date=last%2010%20years'
-
-
-    };
-    const accessToken = '35066921-9726-454e-aa5d-c1ae4c5fe686';
-
-    return searchConf.url
-      + searchConf.param_query + encodeURI(searchQuery)
-      + searchConf.param_token + accessToken
-      + searchConf.param_max_rows + searchConf.max_rows
-      + searchConf.param_time_zone
-      + searchConf.param_time_range
-      ;
-  }
-
-  public executeHttpRequest(searchQuery: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const url = this.buildSearchUrl(searchQuery);
-      console.log('URL', url);
-      this.http.get<any>(url).subscribe(data => {
-        // console.log("Response for dashboard:", data);
-        resolve(data);
-
-      }, error => {
-        console.log('Error got on HTTP call', error);
-        reject(error);
-      });
-    }) as Promise<any>;
-  }
-
 
   public loadData(jkql: string): void {
-    var h = function(tag, attrs, children) {
-      var el = document.createElement(tag);
-
-      Object.keys(attrs).forEach(function(key) {
-        var val = attrs[key];
-
-        el.setAttribute(key, val);
-      });
-
-      children.forEach(function(child) {
-        el.appendChild(child);
-      });
-
-      return el;
-    };
-
-    var t = function(text) {
-      var el = document.createTextNode(text);
-
-      return el;
-    };
 
     var $ = document.querySelector.bind(document);
 
-    this.executeHttpRequest(jkql).then(data => {
+    this.jkoolService.executeHttpRequest(jkql).then(data => {
         console.log('Response from jkool', data);
 
         if (data != undefined) {
+          let datum = data['data-date-range'];
+          let strings = datum.split(" TO ");
+          this.selectedStartValue=new Date(strings[0]/1000);
+          this.selectedEndValue=new Date(strings[1]/1000);
           this.cy.startBatch();
           let cy = this.cy;
           for (let index = 0; index < data['rows'].length; index++) {
@@ -190,6 +151,8 @@ export class RemoraComponent implements AfterViewInit {
                 let dataPoint1 = new dataPoint(line, row);
                 let traceElement1 = new traceElement(dataPoint1);
                 cy.add(traceElement1);
+              } else {
+                !cy.getElementById(line.trim()).data().eventID.push(row['EventID']);
               }
 
               if (innerIndex >= 2) {
@@ -207,52 +170,27 @@ export class RemoraComponent implements AfterViewInit {
 
           }
 
-          var makeTippy = function(node, html) {
-
-            return tippy(node.popperRef(), {
-              html: html,
-              trigger: 'manual',
-              arrow: true,
-              placement: 'bottom',
-              hideOnClick: false,
-              theme: 'light',
-              interactive: true
-            }).tooltips[0];
-          };
-
-          var hideTippy = function(node) {
-            var tippy = node.data('tippy');
-
-            if (tippy != null) {
-              tippy.instance.hide();
-            }
-          };
-
-          var hideAllTippies = function() {
-            cy.nodes().forEach(hideTippy);
-          };
-
-          cy.on('tap', function(e) {
+          cy.on('tap', (e) => {
             if (e.target === cy) {
-              hideAllTippies();
+              this.hideAllTippies();
             }
           });
 
-          cy.on('tap', 'edge', function(e) {
-            hideAllTippies();
+          cy.on('tap', 'edge', (e) => {
+            this.hideAllTippies();
           });
 
-          cy.on('zoom pan', function(e) {
-            hideAllTippies();
+          cy.on('zoom pan', (e) => {
+            this.hideAllTippies();
           });
 
           cy.nodes().forEach((n) => {
             let tippy = this.makeNewTippy(n);
             n.data('tippy', tippy);
 
-            n.on('click', function(e) {
+            n.on('click', (e) => {
               tippy.instance.show();
-              cy.nodes().not(n).forEach((node) => hideTippy(node));
+              cy.nodes().not(n).forEach((node) => this.hideTippy(node));
             });
           });
 
@@ -325,9 +263,8 @@ export class RemoraComponent implements AfterViewInit {
   private makeNewTippy(n: any) {
     let factory = this.resolver.resolveComponentFactory(TraceNodeTippieComponent);
     let tippy = this.activeComponent.createComponent<TraceNodeTippieComponent>(factory);
-    tippy.instance.nodeRef=n.popperRef();
-    tippy.instance.data=n.data();
-    console.log(n.data);
+    tippy.instance.nodeRef = n.popperRef();
+    tippy.instance.data = n.data();
     tippy.instance.build();
     return tippy;
   }
@@ -350,7 +287,7 @@ export class RemoraComponent implements AfterViewInit {
     var tippy = node.data('tippy');
 
     if (tippy != null) {
-      tippy.hide();
+      tippy.instance.hide();
     }
   }
 

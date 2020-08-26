@@ -11,6 +11,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatIconModule} from '@angular/material/icon';
 import { TraceNodeTippieComponent } from './trace-node-tippie/trace-node-tippie.component';
+import { DxRangeSelectorModule } from 'devextreme-angular';
+
 
 @NgModule({
   declarations: [
@@ -27,8 +29,8 @@ import { TraceNodeTippieComponent } from './trace-node-tippie/trace-node-tippie.
     ReactiveFormsModule,
     BrowserAnimationsModule,
     MatAutocompleteModule,
-    MatIconModule
-
+    MatIconModule,
+    DxRangeSelectorModule
   ],
   providers: [],
   bootstrap: [AppComponent]
