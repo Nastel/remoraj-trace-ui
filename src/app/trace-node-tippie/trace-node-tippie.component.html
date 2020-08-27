@@ -1,5 +1,5 @@
 <div class="remora-tipie">
-  <h4>{{data.clazz}}</h4>
+  <h4><span *ngFor="let entry of data.classEntries; let i = index" [attr.data-index]="i" (click)="mark(data.classEntries.slice(0, i+1).join('.'))">{{entry}}{{i < data.classEntries.length-1 ? ".": ""}}</span></h4>
 
   <p>{{data.method}}</p>
 

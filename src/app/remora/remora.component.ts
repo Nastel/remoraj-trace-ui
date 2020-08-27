@@ -1,20 +1,9 @@
-import {
-  Component,
-  ComponentFactoryResolver,
-  Injector,
-  AfterViewInit,
-  ReflectiveInjector,
-  ViewChild,
-  ViewContainerRef,
-  ViewChildren
-} from '@angular/core';
+import {AfterViewInit, Component, ComponentFactoryResolver, ViewChild, ViewContainerRef} from '@angular/core';
 import * as cytoscape from 'cytoscape';
 import * as popper from 'cytoscape-popper';
 import * as tippy from 'tippy.js';
-
-import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
-import {dataPoint, traceElement} from '../model/dataPoint';
+import {dataPoint, getId, traceElement} from '../model/dataPoint';
 import {TraceNodeTippieComponent} from '../trace-node-tippie/trace-node-tippie.component';
 import {JkoolService} from '../jkool.service';
 
@@ -29,7 +18,6 @@ cytoscape.use(popper);
 export class RemoraComponent implements AfterViewInit {
   @ViewChild('tippie', {read: ViewContainerRef}) activeComponent: ViewContainerRef;
   private cy;
-  readonly baseNodeColor = 'green';
   readonly markNodeColor = 'red';
   query: string = '';
   mark: string = '';
@@ -140,27 +128,29 @@ export class RemoraComponent implements AfterViewInit {
           let cy = this.cy;
           for (let index = 0; index < data['rows'].length; index++) {
             let row = data['rows'][index];
+            if (row['Message'] === undefined || row['Message'] == null ) continue;
             let traceElementLines = row['Message'].split('\n');
+            let traceElementLinesFormatted = traceElementLines.map(e => e.trim()).map(e=> e.includes('[') ? e.substring(0, e.lastIndexOf('[')):e).map(e=> e.trim());
             let cy = this.cy;
             for (let innerIndex = 0; innerIndex < traceElementLines.length; innerIndex++) {
-              let line = traceElementLines[innerIndex];
-              if (line.startsWith('Stack length:') || line.trim() == '') {
+              let line = traceElementLines[innerIndex].trim();
+              if (line.startsWith('Stack length:') || line.trim() == '' || line.startsWith("com.jkoolcloud.remora") || !line.includes('()')) {
                 continue;
               }
-              if (!cy.hasElementWithId(line.trim())) {
+              if (!cy.hasElementWithId(getId(line))) {
                 let dataPoint1 = new dataPoint(line, row);
                 let traceElement1 = new traceElement(dataPoint1);
                 cy.add(traceElement1);
               } else {
-                !cy.getElementById(line.trim()).data().eventID.push(row['EventID']);
+               // !cy.getElementById(line.trim()).data().eventID.push(row['EventID']);
               }
 
-              if (innerIndex >= 2) {
+              if (innerIndex > 2 &&cy.hasElementWithId(getId(traceElementLinesFormatted[innerIndex - 1]))) {
                 cy.add({
                   data: {
                     id: index + '_' + innerIndex,
-                    source: traceElementLines[innerIndex - 1].trim(),
-                    target: line.trim(),
+                    source: getId(traceElementLinesFormatted[innerIndex - 1]),
+                    target: getId(traceElementLinesFormatted[innerIndex].trim()),
                   }
 
                 });
@@ -308,8 +298,5 @@ export class RemoraComponent implements AfterViewInit {
 
   }
 
-  public getContextRoot(): string {
-    return environment.contextRootForConfiguration;
-  }
 
 }
