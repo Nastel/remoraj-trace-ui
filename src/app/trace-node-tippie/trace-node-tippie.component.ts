@@ -57,12 +57,19 @@ export class TraceNodeTippieComponent {
     if (this.properties === undefined) {
       this.jKoolService.executeHttpRequest('get event fields properties  where EventID in (\'' + this.data.eventID.join('\',\'') + '\')').then((data) => {
         console.log('Properties data' + data);
-        let map = new Map(data.rows.map((e) => Object.entries(e.Properties)).flat(1).map(e => e.reverse()));
+        /*
+        collapse the same proeprties as one record
+         */
+
+        let map1 = data.rows.map((e) => Object.entries(e.Properties)).flat(1);
+        let map = new Map(map1.map(e => e.reverse()));
         let set = new Set(Array.from(map.values()));
         let reverseMap: Map<any, any> = new Map<any, any>();
         set.forEach(e => {
             let filter = [...map.entries()].filter(({1: v}) => v === e);
-            reverseMap.set(e, filter.map(e => e[0]));
+            let value = filter.map(e => e[0]);
+            value = value.map(value1 => [value1, map1.filter(aa => value1 == aa[0]).length]);
+            reverseMap.set(e, value);
           }
         );
 

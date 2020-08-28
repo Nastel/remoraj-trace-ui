@@ -142,7 +142,7 @@ export class RemoraComponent implements AfterViewInit {
                 let traceElement1 = new traceElement(dataPoint1);
                 cy.add(traceElement1);
               } else {
-               // !cy.getElementById(line.trim()).data().eventID.push(row['EventID']);
+                !cy.getElementById(getId(line)).data().eventID.push(row['EventID']);
               }
 
               if (innerIndex > 2 &&cy.hasElementWithId(getId(traceElementLinesFormatted[innerIndex - 1]))) {

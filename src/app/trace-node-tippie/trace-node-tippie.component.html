@@ -1,5 +1,6 @@
 <div class="remora-tipie">
-  <h4><span *ngFor="let entry of data.classEntries; let i = index" [attr.data-index]="i" (click)="mark(data.classEntries.slice(0, i+1).join('.'))">{{entry}}{{i < data.classEntries.length-1 ? ".": ""}}</span></h4>
+  <h4><span *ngFor="let entry of data.classEntries; let i = index" [attr.data-index]="i"
+            (click)="mark(data.classEntries.slice(0, i+1).join('.'))">{{entry}}{{i < data.classEntries.length - 1 ? "." : ""}}</span></h4>
 
   <p>{{data.method}}</p>
 
@@ -9,12 +10,19 @@
     Time: {{additionalData.rows[0]['Min(StartTime)'] / 1000 | date:"medium" }}</p>
   <p *ngIf="additionalData != undefined && additionalData.rows != undefined && additionalData.rows.length>0">Time
     end: {{additionalData.rows[0]['Max(StartTime)'] / 1000 | date:"medium" }}</p>
+  <p *ngIf="data != undefined && data.eventID != undefined">Number of events:
+    {{data.eventID.length}}</p>
   <button *ngIf="properties===undefined" (click)="getProperties()">More..</button>
   <div *ngIf="properties!==undefined">
     <div *ngFor="let property of properties | keyvalue">
-      <strong><span>{{property.key}}:</span></strong> <span> {{property.value}}</span><br>
-    </div>
+      <strong><span>{{property.key}}:</span></strong>
+      <span *ngFor="let value of property.value">
+        <span>{{value[0]}}</span>
+        <span><strong>({{value[1]}})</strong> </span>
+      </span>
 
+    </div>
+    <br>
   </div>
 
 
