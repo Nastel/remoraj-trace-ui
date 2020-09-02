@@ -12,13 +12,15 @@
     end: {{additionalData.rows[0]['Max(StartTime)'] / 1000 | date:"medium" }}</p>
   <p *ngIf="data != undefined && data.eventID != undefined">Number of events:
     {{data.eventID.length}}</p>
-  <button *ngIf="properties===undefined" (click)="getProperties()">More..</button>
+  <button *ngIf="properties===undefined && data.entryPoint" (click)="getProperties()">More..</button>
+  <button *ngIf="!data.entryPoint" (click)="trackMethod(data.clazz + '.' +data.method)">Track method</button>
+
   <div *ngIf="properties!==undefined">
     <div *ngFor="let property of properties | keyvalue">
-      <strong><span>{{property.key}}:</span></strong>
+      <strong><span>{{property.key}}: </span></strong>
       <span *ngFor="let value of property.value">
         <span>{{value[0]}}</span>
-        <span><strong>({{value[1]}})</strong> </span>
+        <span><strong>({{value[1]}}) </strong> </span>
       </span>
 
     </div>

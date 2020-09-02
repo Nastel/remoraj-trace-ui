@@ -3,6 +3,7 @@ import {dataPoint} from '../model/dataPoint';
 import * as tippy from 'tippy.js';
 import {JkoolService} from '../jkool.service';
 import {RemoraComponent} from '../remora/remora.component';
+import {RemoraService} from '../remora.service';
 
 
 @Component({
@@ -27,7 +28,7 @@ export class TraceNodeTippieComponent {
   additionalData: any;
   properties: any;
 
-  constructor(private el: ElementRef, private jKoolService: JkoolService, private _remora: RemoraComponent) {
+  constructor(private el: ElementRef, private jKoolService: JkoolService, private _remora: RemoraComponent, private _remoraService: RemoraService) {
   }
 
   public build() {
@@ -82,5 +83,9 @@ export class TraceNodeTippieComponent {
   mark(strings: string) {
     this._remora.mark = strings;
     this._remora.markIt();
+  }
+
+  trackMethod(classAndMethod:string) {
+    this._remoraService.addTrackedMethod(classAndMethod).then(returned => console.log(returned));
   }
 }

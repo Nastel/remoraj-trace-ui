@@ -3,7 +3,7 @@ import * as cytoscape from 'cytoscape';
 import * as popper from 'cytoscape-popper';
 import * as tippy from 'tippy.js';
 import {environment} from '../../environments/environment';
-import {dataPoint, getId, traceElement} from '../model/dataPoint';
+import {dataPoint, getEventID, getId, traceElement} from '../model/dataPoint';
 import {TraceNodeTippieComponent} from '../trace-node-tippie/trace-node-tippie.component';
 import {JkoolService} from '../jkool.service';
 
@@ -132,8 +132,13 @@ export class RemoraComponent implements AfterViewInit {
             let traceElementLines = row['Message'].split('\n');
             let traceElementLinesFormatted = traceElementLines.map(e => e.trim()).map(e=> e.includes('[') ? e.substring(0, e.lastIndexOf('[')):e).map(e=> e.trim());
             let cy = this.cy;
+            let lastEventId:string =row['EventID'];
             for (let innerIndex = 0; innerIndex < traceElementLines.length; innerIndex++) {
+
               let line = traceElementLines[innerIndex].trim();
+              if (line.includes('[')) {
+                lastEventId =getEventID(line);
+              }
               if (line.startsWith('Stack length:') || line.trim() == '' || line.startsWith("com.jkoolcloud.remora") || !line.includes('()')) {
                 continue;
               }
@@ -142,7 +147,16 @@ export class RemoraComponent implements AfterViewInit {
                 let traceElement1 = new traceElement(dataPoint1);
                 cy.add(traceElement1);
               } else {
-                !cy.getElementById(getId(line)).data().eventID.push(row['EventID']);
+                let element = cy.getElementById(getId(line));
+                let elementData = element.data();
+                if (elementData.entryPoint) {
+
+                  let eventIDs = elementData.eventID;
+                  if (!eventIDs.includes(lastEventId)) {
+                    eventIDs.push(lastEventId);
+                  }
+                }
+
               }
 
               if (innerIndex > 2 &&cy.hasElementWithId(getId(traceElementLinesFormatted[innerIndex - 1]))) {

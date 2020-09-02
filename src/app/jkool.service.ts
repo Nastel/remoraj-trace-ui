@@ -6,7 +6,7 @@ import {HttpClient} from '@angular/common/http';
 })
 export class JkoolService {
 
-  constructor(private http: HttpClient,) { }
+  constructor(private http: HttpClient) { }
 
   public executeHttpRequest(searchQuery: string): Promise<any> {
     console.log(searchQuery);
