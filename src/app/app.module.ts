@@ -12,6 +12,7 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatIconModule} from '@angular/material/icon';
 import { TraceNodeTippieComponent } from './trace-node-tippie/trace-node-tippie.component';
 import { DxRangeSelectorModule } from 'devextreme-angular';
+import {MatMenuModule} from '@angular/material/menu';
 
 
 @NgModule({
@@ -20,18 +21,19 @@ import { DxRangeSelectorModule } from 'devextreme-angular';
     RemoraComponent,
     TraceNodeTippieComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    CytoscapeNgLibModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    BrowserAnimationsModule,
-    MatAutocompleteModule,
-    MatIconModule,
-    DxRangeSelectorModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        CytoscapeNgLibModule,
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        BrowserAnimationsModule,
+        MatAutocompleteModule,
+        MatIconModule,
+        DxRangeSelectorModule,
+        MatMenuModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

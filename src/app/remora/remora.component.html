@@ -35,6 +35,21 @@
 </mat-autocomplete>
 <button (click)="submit()">Click</button>
 
+<button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="stopPropagation($event)">
+    <mat-icon>cloud</mat-icon>
+    <span><input id="token" type="text" [(ngModel)]="token" name="token" #name="ngModel"></span>
+  </button>
+  <button mat-menu-item (click)="stopPropagation($event)">
+    <mat-icon>link</mat-icon>
+    <span><input id="remoraUrl" type="text" [(ngModel)]="remoraUrl" name="remoraUrl" #name="ngModel"></span>
+  </button>
+</mat-menu>
+
+
 <br>
 <input id="remoraMark" type="text" [(ngModel)]="mark" name="mark"
        #name="ngModel">
@@ -42,4 +57,8 @@
 <button (click)="clearIt()">Clear</button>
 <ng-template #tippie></ng-template>
 </div>
+
+
+
+
 <div id="cy"></div>

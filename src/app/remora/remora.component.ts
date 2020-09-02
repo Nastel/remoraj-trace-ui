@@ -6,6 +6,7 @@ import {environment} from '../../environments/environment';
 import {dataPoint, getEventID, getId, traceElement} from '../model/dataPoint';
 import {TraceNodeTippieComponent} from '../trace-node-tippie/trace-node-tippie.component';
 import {JkoolService} from '../jkool.service';
+import {RemoraService} from '../remora.service';
 
 
 cytoscape.use(popper);
@@ -16,6 +17,7 @@ cytoscape.use(popper);
   styleUrls: ['./remora.component.css']
 })
 export class RemoraComponent implements AfterViewInit {
+
   @ViewChild('tippie', {read: ViewContainerRef}) activeComponent: ViewContainerRef;
   private cy;
   readonly markNodeColor = 'red';
@@ -26,7 +28,7 @@ export class RemoraComponent implements AfterViewInit {
 
   private readonly _storageKey = 'remoraQueries';
 
-  constructor(private resolver: ComponentFactoryResolver, private jkoolService: JkoolService) {
+  constructor(private resolver: ComponentFactoryResolver, private jkoolService: JkoolService, private remoraService: RemoraService) {
     let remoraQueries = window.localStorage.getItem(this._storageKey);
     if (remoraQueries != undefined) {
       this.defaultOptions = JSON.parse(remoraQueries);
@@ -40,6 +42,8 @@ export class RemoraComponent implements AfterViewInit {
 
   selectedStartValue: Date = new Date(2011, 1, 5);
   selectedEndValue: Date = new Date(2011, 2, 5);
+  private _token: any = "abc";
+  private _remoraUrl: any = "def";
 
   ngAfterViewInit(): void {
     this.jkoolService.executeHttpRequest('Get Event  fields open(starttime), close(starttime) for latest day').then(
@@ -313,4 +317,27 @@ export class RemoraComponent implements AfterViewInit {
   }
 
 
+  stopPropagation(event: MouseEvent) {
+    event.stopPropagation();
+  }
+
+  get remoraUrl(): any {
+    let remoraUrl = this.remoraService.remoraUrl;
+    this._remoraUrl =remoraUrl;
+    return remoraUrl;
+  }
+
+  set remoraUrl(value: any) {
+    this._remoraUrl =value;
+    this.remoraService.remoraUrl = value;
+  }
+  get token(): any {
+    this._token = this.jkoolService.accessToken;
+    return this._token;
+  }
+
+  set token(value: any) {
+    this._token =value;
+    this.jkoolService.accessToken = value;
+  }
 }

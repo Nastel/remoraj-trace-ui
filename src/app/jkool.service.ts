@@ -6,6 +6,7 @@ import {HttpClient} from '@angular/common/http';
 })
 export class JkoolService {
 
+  private _accessToken = '35066921-9726-454e-aa5d-c1ae4c5fe686';
   constructor(private http: HttpClient) { }
 
   public executeHttpRequest(searchQuery: string): Promise<any> {
@@ -37,14 +38,22 @@ export class JkoolService {
 
 
     };
-    const accessToken = '35066921-9726-454e-aa5d-c1ae4c5fe686';
 
     return searchConf.url
       + searchConf.param_query + encodeURI(searchQuery)
-      + searchConf.param_token + accessToken
+      + searchConf.param_token + this._accessToken
       + searchConf.param_max_rows + searchConf.max_rows
       + searchConf.param_time_zone
       + searchConf.param_time_range
       ;
   }
+
+  get accessToken(): string {
+    return this._accessToken;
+  }
+
+  set accessToken(value: string) {
+    this._accessToken = value;
+  }
+
 }
