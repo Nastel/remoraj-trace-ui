@@ -13,6 +13,7 @@ import {MatIconModule} from '@angular/material/icon';
 import { TraceNodeTippieComponent } from './trace-node-tippie/trace-node-tippie.component';
 import { DxRangeSelectorModule } from 'devextreme-angular';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import {MatMenuModule} from '@angular/material/menu';
         MatAutocompleteModule,
         MatIconModule,
         DxRangeSelectorModule,
-        MatMenuModule
+        MatMenuModule,
+      MatSnackBarModule
     ],
   providers: [],
   bootstrap: [AppComponent]
