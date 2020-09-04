@@ -7,7 +7,8 @@ import {MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   providedIn: 'root'
 })
 export class RemoraService {
-  private _remoraUrl: string = "http://localhost:7366";
+  private  _remoraUrlLocalStorageKey = "REMORA_URL";
+  private _remoraUrl: string = window.localStorage.getItem(this._remoraUrlLocalStorageKey) ||"http://localhost:7366";
 
   constructor(private http: HttpClient, public snackBar: MatSnackBar) { }
 
@@ -35,6 +36,7 @@ export class RemoraService {
   }
 
   set remoraUrl(value: string) {
+    window.localStorage.setItem(this._remoraUrlLocalStorageKey, value);
     this._remoraUrl = value;
   }
 
